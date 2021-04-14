@@ -4,18 +4,18 @@ defmodule NimblePublisher.Highlighter do
   @doc """
   Highlights all code block in an already generated HTML document.
   """
-  def highlight(html) do
+  def highlight(html, highlight_opts) do
     Regex.replace(
       ~r/<pre><code(?:\s+class="(\w*)")?>([^<]*)<\/code><\/pre>/,
       html,
-      &highlight_code_block(&1, &2, &3)
+      &highlight_code_block(&1, &2, &3, highlight_opts)
     )
   end
 
-  defp highlight_code_block(full_block, lang, code) do
+  defp highlight_code_block(full_block, lang, code, highlight_opts) do
     case pick_language_and_lexer(lang) do
       {_language, nil, _opts} -> full_block
-      {language, lexer, opts} -> render_code(language, lexer, opts, code)
+      {language, lexer, opts} -> render_code(language, lexer, opts, code, highlight_opts)
     end
   end
 
@@ -28,7 +28,7 @@ defmodule NimblePublisher.Highlighter do
     end
   end
 
-  defp render_code(lang, lexer, lexer_opts, code) do
+  defp render_code(lang, lexer, lexer_opts, code, highlight_opts) do
     highlighted =
       code
       |> unescape_html()
@@ -39,7 +39,10 @@ defmodule NimblePublisher.Highlighter do
         formatter_options: [highlight_tag: "span"]
       )
 
-    ~s(<pre><code class="makeup #{lang}">#{highlighted}</code></pre>)
+    code_class = Keyword.get(highlight_opts, :code_class, "makeup")
+
+
+    ~s(<pre><code class="#{code_class} #{lang}">#{highlighted}</code></pre>)
   end
 
   entities = [{"&amp;", ?&}, {"&lt;", ?<}, {"&gt;", ?>}, {"&quot;", ?"}, {"&#39;", ?'}]

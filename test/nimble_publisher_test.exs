@@ -110,6 +110,20 @@ defmodule NimblePublisherTest do
     end
   end
 
+  test "handles highlight opts for blocks" do
+    defmodule Example do
+      use NimblePublisher,
+          build: Builder,
+          from: "test/fixtures/syntax.md",
+          as: :highlights,
+          highlight_opts: [code_class: "makeup dark:makeup"],
+          highlighters: [:makeup_elixir]
+
+      assert hd(@highlights).attrs == %{syntax: "highlight"}
+      assert hd(@highlights).body =~ "<pre><code class=\"makeup dark:makeup elixir\">"
+    end
+  end
+
   test "does not require recompilation unless paths changed" do
     defmodule Example do
       use NimblePublisher,
